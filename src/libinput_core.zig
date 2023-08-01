@@ -22,8 +22,8 @@ pub const Backend = union(enum) {
 
         /// List of seat names to be added.
         ///
-        /// Must be supplied by the user.
-        seats: []const []const u8,
+        /// Defaults to just "seat0".
+        seats: []const []const u8 = [_][]const u8{"seat0"},
     },
 };
 

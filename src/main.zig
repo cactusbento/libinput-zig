@@ -3,13 +3,7 @@ const libinput = @import("libinput");
 const c = libinput.c;
 
 pub fn main() !void {
-    var li = try libinput.init(.{
-        .udev = .{
-            .seats = &[_][]const u8{
-                "seat0",
-            },
-        },
-    }, null);
+    var li = try libinput.init(.{}, null);
     defer li.deinit();
 
     while (true) {
