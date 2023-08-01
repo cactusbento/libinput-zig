@@ -3,7 +3,7 @@ const libinput = @import("libinput");
 const c = libinput.c;
 
 pub fn main() !void {
-    var li = try libinput.init(.{}, null);
+    var li = try libinput.init(.{ .udev = .{} }, null);
     defer li.deinit();
 
     while (true) {
@@ -13,8 +13,8 @@ pub fn main() !void {
             defer event.destroy();
             if (event.kind() == .keyboard_key) {
                 const ev = event.get_event();
-                if (ev.keyboard.key == 57) std.debug.print("Spacebar Event: {s}\n", .{
-                    if (ev.keyboard.state == .pressed) "Pressed" else "Released",
+                std.debug.print("KeyPressed: {d}\n", .{
+                    ev.keyboard.key,
                 });
             }
         }

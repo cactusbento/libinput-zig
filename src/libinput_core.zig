@@ -23,7 +23,7 @@ pub const Backend = union(enum) {
         /// List of seat names to be added.
         ///
         /// Defaults to just "seat0".
-        seats: []const []const u8 = [_][]const u8{"seat0"},
+        seats: []const []const u8 = &[_][]const u8{"seat0"},
     },
 };
 
