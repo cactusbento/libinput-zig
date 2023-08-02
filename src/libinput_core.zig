@@ -4,8 +4,8 @@ pub const c = @cImport({
     @cInclude("libudev.h");
 });
 
-pub const event = @import("libinput_events.zig");
-const libinput = @This();
+pub const Event = @import("libinput_events.zig");
+const LibInput = @This();
 
 /// Holds user defined backend specific information.
 pub const Backend = union(enum) {
@@ -45,7 +45,7 @@ li: *c.struct_libinput,
 /// Udev:
 ///     If the user does not supply their own udev instance (typically created by udev_new()),
 ///     init will create one for them.
-pub fn init(backend: Backend, user_data: ?*anyopaque) !libinput {
+pub fn init(backend: Backend, user_data: ?*anyopaque) !LibInput {
     switch (backend) {
         .path => {
             return error.TODOImplementPathBackend;
@@ -53,7 +53,7 @@ pub fn init(backend: Backend, user_data: ?*anyopaque) !libinput {
         .udev => {
             if (backend.udev.seats.len < 1) return error.NoSeatsProvided;
 
-            var retVal = libinput{
+            var retVal = LibInput{
                 .backend = backend,
                 .li = undefined,
             };
@@ -78,7 +78,7 @@ pub fn init(backend: Backend, user_data: ?*anyopaque) !libinput {
 }
 
 /// Must be ran to avoid leaks and residual devices.
-pub fn deinit(self: *libinput) void {
+pub fn deinit(self: *LibInput) void {
     _ = c.libinput_unref(self.li);
 
     switch (self.backend) {
@@ -95,7 +95,7 @@ pub fn deinit(self: *libinput) void {
 /// Main event dispatch function.
 ///
 /// Reads events of the file descriptors and processes them internally.
-pub fn dispatch(self: *libinput) !void {
+pub fn dispatch(self: *LibInput) !void {
     if (c.libinput_dispatch(self.li) != 0) return error.FailedDispatch;
 }
 
@@ -106,9 +106,9 @@ pub const GetSetEnum = enum { fd, event, user_data, log_priority };
 /// Runs `libinput_get_#ENUM-NAME-HERE()`
 ///
 /// Target must be know at comptime.
-pub fn get(self: *libinput, comptime target: GetSetEnum) switch (target) {
+pub fn get(self: *LibInput, comptime target: GetSetEnum) switch (target) {
     .fd => c_int,
-    .event => ?event,
+    .event => ?Event,
     .user_data => ?*anyopaque,
     .log_priority => c_int,
 } {
@@ -117,7 +117,7 @@ pub fn get(self: *libinput, comptime target: GetSetEnum) switch (target) {
         .event => blk: {
             const e = c.libinput_get_event(self.li);
             break :blk if (e) |ev|
-                event{ .ev = ev }
+                Event{ .ev = ev }
             else
                 null;
         },
@@ -126,11 +126,11 @@ pub fn get(self: *libinput, comptime target: GetSetEnum) switch (target) {
     };
 }
 
-pub fn @"suspend"(self: *libinput) void {
+pub fn @"suspend"(self: *LibInput) void {
     c.libinput_suspend(self.li);
 }
 
-pub fn @"resume"(self: *libinput) !void {
+pub fn @"resume"(self: *LibInput) !void {
     if (c.libinput_resume(self.li) != 0) return error.FailedToResume;
 }
 
