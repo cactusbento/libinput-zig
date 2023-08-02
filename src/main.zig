@@ -1,5 +1,5 @@
 const std = @import("std");
-const libinput = @import("libinput");
+const libinput = @import("libinput_core.zig");
 const c = libinput.c;
 
 pub fn main() !void {

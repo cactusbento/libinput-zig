@@ -15,7 +15,8 @@ pub fn build(b: *std.Build) void {
     // set a preferred release mode, allowing the user to decide how to optimize.
     const optimize = b.standardOptimizeOption(.{});
 
-    const libinput = b.addModule("libinput", std.Build.CreateModuleOptions{ .source_file = .{ .path = "src/libinput_core.zig" } });
+    // Export Module for pkg mgmt.
+    _ = b.addModule("libinput", std.Build.CreateModuleOptions{ .source_file = .{ .path = "src/libinput_core.zig" } });
 
     const exe = b.addExecutable(.{
         .name = "zigLibInput",
@@ -29,8 +30,6 @@ pub fn build(b: *std.Build) void {
     exe.linkLibC();
     exe.linkSystemLibrary("libinput");
     exe.linkSystemLibrary("libudev");
-
-    exe.addModule("libinput", libinput);
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
