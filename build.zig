@@ -16,7 +16,7 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     // Export Module for pkg mgmt.
-    _ = b.addModule("libinput", std.Build.CreateModuleOptions{ .source_file = .{ .path = "src/libinput_core.zig" } });
+    const mod = b.addModule("libinput", std.Build.CreateModuleOptions{ .source_file = .{ .path = "src/libinput_core.zig" } });
 
     const exe = b.addExecutable(.{
         .name = "zigLibInput",
@@ -31,10 +31,23 @@ pub fn build(b: *std.Build) void {
     exe.linkSystemLibrary("libinput");
     exe.linkSystemLibrary("libudev");
 
+    exe.addModule("libinput", mod);
+
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
     // step when running `zig build`).
     b.installArtifact(exe);
+
+    const doc_step = b.step("docs", "Build autodoc for the module");
+    const doc_test = b.addTest(.{
+        .root_source_file = .{ .path = "src/libinput_core.zig" },
+    });
+    const doc_dir = mod.builder.addInstallDirectory(.{
+        .source_dir = doc_test.getEmittedDocs(),
+        .install_dir = .prefix,
+        .install_subdir = "doc/mod",
+    });
+    doc_step.dependOn(&doc_dir.step);
 
     // This *creates* a Run step in the build graph, to be executed when another
     // step is evaluated that depends on it. The next line below will establish
