@@ -141,7 +141,7 @@ pub fn @"resume"(self: *LibInput) !void {
 // Default functions for the libinput interface.
 fn open_restricted(path: [*c]const u8, flags: c_int, user_data: ?*anyopaque) callconv(.C) i32 {
     _ = user_data;
-    const fd = std.os.openZ(path, @intCast(flags), 0x333) catch unreachable;
+    const fd = std.os.openZ(path, @intCast(flags), 0x666) catch unreachable;
     return fd;
 }
 
