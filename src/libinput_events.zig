@@ -14,13 +14,13 @@ pub fn destroy(self: Event) void {
 }
 
 pub const KeyboardEvent = struct {
-    /// Timestamp of this keyboard event.
+    /// Timestamp of the event.
     time: u32,
-    /// Timestamp of this keyboard event in microseconds.
+    /// Timestamp of the event in microseconds.
     time_us: u64,
-    /// Keycode of the key pressed/released.
+    /// Keycode of the key pressed/released in this event.
     key: u32,
-    /// Whether the key was pressed or released in this event.
+    /// Key state that triggered this event.
     state: KeyState,
 
     /// Defines possible states for a keypress.
@@ -30,9 +30,46 @@ pub const KeyboardEvent = struct {
     };
 };
 
+pub const PointerEvent = struct {
+    /// Timestamp of the event.
+    time: u32,
+    /// Timestamp of the event in microseconds.
+    time_us: u64,
+    /// Code of the button pressed/released in this event.
+    ///
+    /// Requires `.pointer_button`, else `0`
+    button: u32,
+    /// Button state that triggered this event.
+    ///
+    /// Requires `.pointer_button`, else `0`
+    state: ButtonState,
+    /// Change in position between last and current event.
+    ///
+    /// Requires `.pointer_motion`, else `{0, 0}`
+    dxdy: Vec2,
+    /// Unaccelerated change in position between last and current event.
+    ///
+    /// Requires `.pointer_motion`, else `{0, 0}`
+    dxdy_unaccelerated: Vec2,
+    /// The current absolute coordinate of the pointer event, in mm from the top left corner of the device.
+    ///
+    /// Requires `.pointer_motion_absolute`, else `{0, 0}`
+    xy_absolute: Vec2,
+
+    /// Defines a container for X and Y results
+    pub const Vec2 = struct { x: f64, y: f64 };
+
+    /// Defines possible states for a button.
+    pub const ButtonState = enum(u32) {
+        pressed = c.LIBINPUT_BUTTON_STATE_PRESSED,
+        released = c.LIBINPUT_BUTTON_STATE_RELEASED,
+    };
+};
+
 pub const EventUnion = union(enum) {
     not_implemented,
     keyboard: KeyboardEvent,
+    pointer: PointerEvent,
 };
 
 pub fn get_event(self: Event) EventUnion {
@@ -48,6 +85,29 @@ pub fn get_event(self: Event) EventUnion {
                         .pressed
                     else
                         .released,
+                },
+            };
+        },
+        .pointer_motion, .pointer_motion_absolute, .pointer_button => blk: {
+            const event = c.libinput_event_get_pointer_event(self.ev);
+            break :blk EventUnion{
+                .pointer = .{
+                    .time = c.libinput_event_pointer_get_time(event),
+                    .time_us = c.libinput_event_pointer_get_time_usec(event),
+                    .button = c.libinput_event_pointer_get_button(event),
+                    .state = @enumFromInt(c.libinput_event_pointer_get_button_state(event)),
+                    .dxdy = .{
+                        .x = c.libinput_event_pointer_get_dx(event),
+                        .y = c.libinput_event_pointer_get_dy(event),
+                    },
+                    .dxdy_unaccelerated = .{
+                        .x = c.libinput_event_pointer_get_dx_unaccelerated(event),
+                        .y = c.libinput_event_pointer_get_dy_unaccelerated(event),
+                    },
+                    .xy_absolute = .{
+                        .x = c.libinput_event_pointer_get_absolute_x(event),
+                        .y = c.libinput_event_pointer_get_absolute_y(event),
+                    },
                 },
             };
         },
