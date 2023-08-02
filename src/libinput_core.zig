@@ -105,7 +105,7 @@ pub const GetSetEnum = enum { fd, event, user_data, log_priority };
 ///
 /// Runs `libinput_get_#ENUM-NAME-HERE()`
 ///
-/// Target must be know at comptime.
+/// Target must be known at comptime.
 pub fn get(self: *LibInput, comptime target: GetSetEnum) switch (target) {
     .fd => c_int,
     .event => ?Event,
