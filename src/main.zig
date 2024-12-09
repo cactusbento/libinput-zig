@@ -10,12 +10,16 @@ pub fn main() !void {
         try li.dispatch();
 
         if (li.get(.event)) |*event| {
-            defer event.destroy();
-            if (event.kind() == .keyboard_key) {
-                const ev = event.get_event();
-                std.debug.print("KeyPressed: {d}\n", .{
-                    ev.keyboard.key,
-                });
+            const ev: *const libinput.Event = event;
+            defer ev.destroy();
+            switch (ev.kind()) {
+                .keyboard_key => {
+                    const ev_union = ev.get_event();
+                    std.debug.print("KeyPressed: {d}\n", .{
+                        ev_union.keyboard.key,
+                    });
+                },
+                else => {},
             }
         }
     }
