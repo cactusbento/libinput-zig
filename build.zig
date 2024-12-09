@@ -9,7 +9,7 @@ pub fn build(b: *std.Build) void {
 
     // Export Module for pkg mgmt.
     const mod = b.addModule("libinput", .{
-        .root_source_file = .{ .path = "src/libinput_core.zig" },
+        .root_source_file = b.path("src/libinput_core.zig"),
         .target = target,
         .optimize = optimize,
         .link_libc = true,
@@ -25,7 +25,7 @@ pub fn build(b: *std.Build) void {
 
     const exe = b.addExecutable(.{
         .name = "zigLibInput",
-        .root_source_file = .{ .path = "src/main.zig" },
+        .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
     });
