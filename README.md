@@ -9,13 +9,8 @@ It packs a bunch of functions into various structs to make the resulting library
 Add the package url to `build.zig.zon` and link libc, libinput, and libudev.
 ```zig
 pub fn build(b: *std.Build) void {
-    // ...
-    exe.linkLibC();
-    exe.linkSystemLibrary("libinput");
-    exe.linkSystemLibrary("libudev");
-
-    exe.addModule("libinput", libinput);
-    // ...
+    const dep = b.dependency("libinput-zig", .{});
+    exe.root_module.addImport("libinput", dep.module());
 }
 
 ```
