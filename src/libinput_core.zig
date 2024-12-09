@@ -141,11 +141,11 @@ pub fn @"resume"(self: *LibInput) !void {
 // Default functions for the libinput interface.
 fn open_restricted(path: [*c]const u8, flags: c_int, user_data: ?*anyopaque) callconv(.C) i32 {
     _ = user_data;
-    const fd = std.os.openZ(path, @intCast(flags), 0x666) catch unreachable;
+    const fd = std.posix.openZ(path, @bitCast(flags), 0x666) catch unreachable;
     return fd;
 }
 
 fn close_restricted(fd: c_int, user_data: ?*anyopaque) callconv(.C) void {
     _ = user_data;
-    std.os.close(@intCast(fd));
+    std.posix.close(@intCast(fd));
 }
